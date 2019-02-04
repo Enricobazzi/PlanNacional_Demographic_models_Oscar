@@ -1,0 +1,128 @@
+---
+title: "0.Mapping_pipeline"
+author: "Enrico"
+date: "30 January 2019"
+output: html_document
+---
+
+In order to calculate demographic models with machine learning methods (step carried by other group = ), high coverage sequencing data for at least 2 individuals per species will be mapped to latest version of the cat reference genome (version 9.0 -> downloaded from ensembl and copied to /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome folder).
+
+```{r, eval=FALSE, engine='bash'}
+
+# Reference Genome needs indexing
+samtools faidx /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
+
+bwa index /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
+
+```
+
+Since the samples were already quality checked and trimmed for previous projects, these steps were skipped and I proceded to map directly.
+
+# 0. Path Definition
+
+Define the paths to different locations
+
+```{r, eval=FALSE, engine='bash'}
+
+MacroGenARRAY=($(ls /backup/grupolince/raw_data/MACROGEN/MACROGEN_trimmed/*.fastq.gz | rev | cut -d'/' -f 1 | rev | cut -d '_' -f1 | uniq)) # List of all Lynx lynx sample codes in MACROGEN project
+
+REF=/home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa # path to cat reference genome
+
+THREADS=10 # No. of computer cores used by bwa and samtools. 20 = OK, >20 = ask people first!
+
+OUT=/home/ebazzicalupo/CatRef_bams # path to output files
+
+MacroGenPATH=/backup/grupolince/raw_data/MACROGEN/MACROGEN_trimmed/ # path to macrogen fastq files
+
+
+# BARCODE MACROGEN:
+declare -A BARCODEID=(["LC1"]="c_lc_zz_0001" ["LL112"]="c_ll_vl_0112" ["LL146"]="c_ll_ya_0146" ["LL212"]="c_ll_cr_0212" ["LL90"]="c_ll_ki_0090" ["LR1"]="c_lr_zz_0001")
+
+```
+
+## 	Mapping BWA-MEM	
+
+```{r, engine=bash, eval=FALSE}
+
+# Trial with only second (1) array element -> LL112
+
+screen -S CatRef_Mapping.log
+script CatRef_Mapping.log
+
+for i in ${MacroGenARRAY[1]}
+  do
+    echo " - mapping ${i} -"
+    bwa mem $REF $MacroGenPATH/${i}_R1_trimmed.fastq.gz $MacroGenPATH/${i}_R2_trimmed.fastq.gz -t $THREADS | samtools view -hbS -@ $THREADS - -o $OUT/${i}.cat_ref.bam
+    echo " - sorting ${i} -"
+    samtools sort -@ $THREADS $OUT/${i}.cat_ref.bam -o $OUT/${i}.cat_ref.sorted.bam && rm $OUT/${i}.cat_ref.bam
+    echo " - done -"
+done
+
+```
+
+## 	Add Read Groups and Change BAM names
+
+```{r, engine=bash, eval=FALSE}
+
+# Trial with only second (1) array element -> LL112
+
+screen -S ReadGroups.log
+script ReadGroups.log
+
+for i in ${MacroGenARRAY[1]}
+  do
+    run=($(echo $i | cut -d"_" -f 1))  #Sacar el run de i
+    echo $run
+    java -jar /opt/picard-tools/picard.jar AddOrReplaceReadGroups I=$OUT/${i}.cat_ref.sorted.bam O=$OUT/${BARCODEID["${i}"]}_${i}.cat_ref.sorted.rg.bam RGID=${i} RGLB=${BARCODEID["${i}"]}_lib RGPL=Illumina RGPU=${run} RGSM=${BARCODEID["${i}"]} VALIDATION_STRINGENCY=SILENT && rm $OUT/${i}.cat_ref.sorted.bam
+done
+
+SAMPLESLIST=($(echo ${BARCODEID[@]} | tr ' ' '\n' | sort | uniq | tr ' ' '\n'))
+for sample in "${SAMPLESLIST[@]}"
+  do
+    echo "${sample}"
+    ls ./"${sample}"_*_sorted_rg.bam  > "${sample}".bam.list
+    echo;echo
+    echo `wc -l "${sample}".bam.list`;
+    lines=`wc -l "${sample}".bam.list | cut -f 1 -d " " `
+    if [ "$lines" -eq "1" ]; 
+      then echo "ONE";
+      cp `cat "${sample}".bam.list`  "${sample}".bam;
+    fi
+    if [ "$lines" -gt "1" ]; 
+      then echo "more than ONE";
+      /opt/samtools/samtools merge  -@ 25 -r "${sample}".bam `cat "${sample}".bam.list`;
+    fi
+  samtools flagstat "${sample}".bam >  "${sample}".stats;
+  /opt/samtools/samtools sort  -@ 25 "${sample}".bam -o "${sample}"_sorted.bam && rm "${sample}".bam;
+done
+
+
+```
+
+## 	Remove Duplicates
+
+```{r, engine=bash, eval=FALSE}
+
+ARRAY_MERGED_BAM_SAMPLE_NAME=($(ls *_sorted.bam |  cut -d'_' -f1,2,3,4 | uniq))
+for i in ${ARRAY_MERGED_BAM_SAMPLE_NAME[@]}
+do
+echo "${i}"
+java -jar picard.jar MarkDuplicates METRICS_FILE=${i}_rmdup.txt I=${i}_sorted.bam O=${i}_sorted_rmdup.bam MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=2000 
+samtools sort ${i}_sorted_rmdup.bam -@ 30 -o ${i}_sorted_rmdup_sorted.bam
+samtools index ${i}_sorted_rmdup_sorted.bam
+samtools flagstat ${i}_sorted_rmdup_sorted.bam > ${i}_sorted_rmdup_sorted.stats
+done
+
+```
+
+##  Realign
+
+```{r, engine=bash, eval=FALSE}
+
+```
+
+##  Base Quality Score Recalibration
+
+```{r, engine=bash, eval=FALSE}
+
+```
