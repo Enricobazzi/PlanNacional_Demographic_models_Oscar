@@ -66,6 +66,8 @@ done
 
 # Trial with only second (1) array element -> LL112
 
+# Read Groups
+
 screen -S ReadGroups.log
 script ReadGroups.log
 
@@ -76,41 +78,46 @@ for i in ${MacroGenARRAY[1]}
     java -jar /opt/picard-tools/picard.jar AddOrReplaceReadGroups I=$OUT/${i}.cat_ref.sorted.bam O=$OUT/${BARCODEID["${i}"]}_${i}.cat_ref.sorted.rg.bam RGID=${i} RGLB=${BARCODEID["${i}"]}_lib RGPL=Illumina RGPU=${run} RGSM=${BARCODEID["${i}"]} VALIDATION_STRINGENCY=SILENT && rm $OUT/${i}.cat_ref.sorted.bam
 done
 
-SAMPLESLIST=($(echo ${BARCODEID[@]} | tr ' ' '\n' | sort | uniq | tr ' ' '\n'))
+# Merge BAMs / Change BAM names
+
+SAMPLESLIST=($(echo ${BARCODEID[@]} | tr ' ' '\n' | sort | uniq | grep c_ll_vl_0112))
 for sample in "${SAMPLESLIST[@]}"
   do
     echo "${sample}"
-    ls ./"${sample}"_*_sorted_rg.bam  > "${sample}".bam.list
+    ls $OUT/"${sample}"_*.cat_ref.sorted.rg.bam  > $OUT/"${sample}".bam.list
     echo;echo
-    echo `wc -l "${sample}".bam.list`;
-    lines=`wc -l "${sample}".bam.list | cut -f 1 -d " " `
+    echo `wc -l $OUT/"${sample}".bam.list`;
+    lines=`wc -l $OUT/"${sample}".bam.list | cut -f 1 -d " " `
     if [ "$lines" -eq "1" ]; 
       then echo "ONE";
-      cp `cat "${sample}".bam.list`  "${sample}".bam;
-    fi
-    if [ "$lines" -gt "1" ]; 
+      cp `cat $OUT/"${sample}".bam.list`  $OUT/"${sample}"_sorted.bam;
+    elif [ "$lines" -gt "1" ]; 
       then echo "more than ONE";
-      /opt/samtools/samtools merge  -@ 25 -r "${sample}".bam `cat "${sample}".bam.list`;
+      samtools merge  -@ $THREADS -r $OUT/"${sample}".bam `cat $OUT/"${sample}".bam.list`;
+      samtools sort  -@ $THREADS $OUT/"${sample}".bam -o $OUT/"${sample}"_sorted.bam && rm $OUT/"${sample}".bam;
     fi
-  samtools flagstat "${sample}".bam >  "${sample}".stats;
-  /opt/samtools/samtools sort  -@ 25 "${sample}".bam -o "${sample}"_sorted.bam && rm "${sample}".bam;
+    samtools flagstat $OUT/"${sample}"_sorted.bam >  $OUT/"${sample}".stats;
 done
-
 
 ```
 
-## 	Remove Duplicates
+## 	Remove / Mark Duplicates
 
 ```{r, engine=bash, eval=FALSE}
 
-ARRAY_MERGED_BAM_SAMPLE_NAME=($(ls *_sorted.bam |  cut -d'_' -f1,2,3,4 | uniq))
+screen -S MDUP.log
+script MDUP.log
+
+ARRAY_MERGED_BAM_SAMPLE_NAME=($(ls $OUT/*_sorted.bam | rev | cut -d'/' -f1 | rev | cut -d'_' -f1-4 | uniq))
 for i in ${ARRAY_MERGED_BAM_SAMPLE_NAME[@]}
-do
-echo "${i}"
-java -jar picard.jar MarkDuplicates METRICS_FILE=${i}_rmdup.txt I=${i}_sorted.bam O=${i}_sorted_rmdup.bam MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=2000 
-samtools sort ${i}_sorted_rmdup.bam -@ 30 -o ${i}_sorted_rmdup_sorted.bam
-samtools index ${i}_sorted_rmdup_sorted.bam
-samtools flagstat ${i}_sorted_rmdup_sorted.bam > ${i}_sorted_rmdup_sorted.stats
+  do
+  echo "${i}"
+  java -jar /opt/picard-tools/picard.jar MarkDuplicates METRICS_FILE=${i}_rmdup.txt I=$OUT/${i}_sorted.bam O=$OUT/${i}_sorted_rmdup.bam MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=800
+  #rm ${i}_sorted.bam
+  samtools sort $OUT/${i}_sorted_rmdup.bam -@ 10 -o $OUT/${i}_sorted_rmdup_sorted.bam
+  #samtools index ${i}_sorted_rmdup_sorted.bam
+  samtools flagstat $OUT/${i}_sorted_rmdup_sorted.bam > $OUT/${i}_sorted_rmdup_sorted.stats
+  #rm ${i}_sorted_rmdup.bam
 done
 
 ```
@@ -119,6 +126,16 @@ done
 
 ```{r, engine=bash, eval=FALSE}
 
+for i in ${ARRAY_MERGED_BAM_SAMPLE_NAME[@]}
+do
+echo "${i}"
+# RealignerTargetCreator
+# rm ${i}_sorted.bam
+# rm ${i}_sorted_rmdup.bam
+java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R $REF -fixMisencodedQuals -I ${i}_sorted_rmdup_sorted.bam -o ${i}_realignertargetcreator.intervals
+# IndelRealigner
+java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T IndelRealigner -R $REF -fixMisencodedQuals -targetIntervals ${i}_realignertargetcreator.intervals -I ${i}_sorted_rmdup_sorted.bam -o ${i}_sorted_rmdup_sorted_indelrealigner.bam
+done
 ```
 
 ##  Base Quality Score Recalibration
