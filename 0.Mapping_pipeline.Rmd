@@ -12,6 +12,8 @@ In order to calculate demographic models with machine learning methods (step car
 # Reference Genome needs indexing
 samtools faidx /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
 
+java -jar /opt/picard-tools/picard.jar CreateSequenceDictionary R= /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa O= /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.dict
+
 bwa index /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
 
 ```
@@ -113,11 +115,11 @@ for i in ${ARRAY_MERGED_BAM_SAMPLE_NAME[@]}
   do
   echo "${i}"
   java -jar /opt/picard-tools/picard.jar MarkDuplicates METRICS_FILE=${i}_rmdup.txt I=$OUT/${i}_sorted.bam O=$OUT/${i}_sorted_rmdup.bam MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=800
-  #rm ${i}_sorted.bam
+  rm $OUT/${i}_sorted.bam
   samtools sort $OUT/${i}_sorted_rmdup.bam -@ 10 -o $OUT/${i}_sorted_rmdup_sorted.bam
-  #samtools index ${i}_sorted_rmdup_sorted.bam
+  rm $OUT/${i}_sorted_rmdup.bam
+  samtools index $OUT/${i}_sorted_rmdup_sorted.bam
   samtools flagstat $OUT/${i}_sorted_rmdup_sorted.bam > $OUT/${i}_sorted_rmdup_sorted.stats
-  #rm ${i}_sorted_rmdup.bam
 done
 
 ```
@@ -126,16 +128,24 @@ done
 
 ```{r, engine=bash, eval=FALSE}
 
+screen -S realign.log
+script realign.log
+
+ARRAY_MERGED_BAM_SAMPLE_NAME=($(ls $OUT/*_sorted.bam | rev | cut -d'/' -f1 | rev | cut -d'_' -f1-4 | uniq))
+
+## Not INCLUDING -fixMisencodedQuals flag because MACROGEN are Illumina 1.9 (quality code doesn't need fixing)
+
 for i in ${ARRAY_MERGED_BAM_SAMPLE_NAME[@]}
-do
-echo "${i}"
-# RealignerTargetCreator
-# rm ${i}_sorted.bam
-# rm ${i}_sorted_rmdup.bam
-java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 24 -R $REF -fixMisencodedQuals -I ${i}_sorted_rmdup_sorted.bam -o ${i}_realignertargetcreator.intervals
-# IndelRealigner
-java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T IndelRealigner -R $REF -fixMisencodedQuals -targetIntervals ${i}_realignertargetcreator.intervals -I ${i}_sorted_rmdup_sorted.bam -o ${i}_sorted_rmdup_sorted_indelrealigner.bam
+  do
+    echo "${i}"
+    samtools index $OUT/${i}_sorted_rmdup_sorted.bam
+    # RealignerTargetCreator
+    java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 10 -R $REF -I $OUT/${i}_sorted_rmdup_sorted.bam -o $OUT/${i}_realignertargetcreator.intervals
+    # IndelRealigner
+    java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T IndelRealigner -R $REF -targetIntervals $OUT/${i}_realignertargetcreator.intervals -I $OUT/${i}_sorted_rmdup_sorted.bam -o $OUT/${i}_sorted_rmdup_sorted_indelrealigner.bam
+
 done
+
 ```
 
 ##  Base Quality Score Recalibration
