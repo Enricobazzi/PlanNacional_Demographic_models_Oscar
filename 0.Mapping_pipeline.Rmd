@@ -18,7 +18,7 @@ bwa index /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_cat
 
 ```
 
-Since the samples were already quality checked and trimmed for previous projects, these steps were skipped and I proceded to map directly.
+Since the samples were already quality checked and trimmed for previous projects, these steps were skipped and I proceeded to map directly.
 
 # 0. Path Definition
 
@@ -42,7 +42,7 @@ declare -A BARCODEID=(["LC1"]="c_lc_zz_0001" ["LL112"]="c_ll_vl_0112" ["LL146"]=
 
 ```
 
-## 	Mapping BWA-MEM	
+## 	Mapping BWA-MEM
 
 ```{r, engine=bash, eval=FALSE}
 
@@ -90,10 +90,10 @@ for sample in "${SAMPLESLIST[@]}"
     echo;echo
     echo `wc -l $OUT/"${sample}".bam.list`;
     lines=`wc -l $OUT/"${sample}".bam.list | cut -f 1 -d " " `
-    if [ "$lines" -eq "1" ]; 
+    if [ "$lines" -eq "1" ];
       then echo "ONE";
       cp `cat $OUT/"${sample}".bam.list`  $OUT/"${sample}"_sorted.bam;
-    elif [ "$lines" -gt "1" ]; 
+    elif [ "$lines" -gt "1" ];
       then echo "more than ONE";
       samtools merge  -@ $THREADS -r $OUT/"${sample}".bam `cat $OUT/"${sample}".bam.list`;
       samtools sort  -@ $THREADS $OUT/"${sample}".bam -o $OUT/"${sample}"_sorted.bam && rm $OUT/"${sample}".bam;
@@ -143,6 +143,7 @@ for i in ${ARRAY_MERGED_BAM_SAMPLE_NAME[@]}
     java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt 10 -R $REF -I $OUT/${i}_sorted_rmdup_sorted.bam -o $OUT/${i}_realignertargetcreator.intervals
     # IndelRealigner
     java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T IndelRealigner -R $REF -targetIntervals $OUT/${i}_realignertargetcreator.intervals -I $OUT/${i}_sorted_rmdup_sorted.bam -o $OUT/${i}_sorted_rmdup_sorted_indelrealigner.bam
+    samtools flagstat $OUT/${i}_sorted_rmdup_sorted_indelrealigner.bam > $OUT/${i}_sorted_rmdup_sorted_indelrealigner.stats
 
 done
 
