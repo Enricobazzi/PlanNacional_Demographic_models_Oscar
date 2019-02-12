@@ -154,3 +154,13 @@ done
 ```{r, engine=bash, eval=FALSE}
 
 ```
+
+# Mapping Loop
+
+```{r, engine=bash, eval=FALSE}
+screen -S maploop.log
+script maploop.log
+
+./MACROGEN-mapping-noLL112.sh
+
+```
