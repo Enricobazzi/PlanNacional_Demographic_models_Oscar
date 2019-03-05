@@ -56,14 +56,14 @@ declare -A BARCODEID=(["LC1"]="c_lc_zz_0001" ["LL112"]="c_ll_vl_0112" ["LL146"]=
 for i in ${MacroGenARRAY[@]}
   do
 
-    echo " *********** \n\n - Mapping ${i} - \n\n ***********"
+    echo -e " *********** \n\n - Mapping ${i} - \n\n ***********"
     bwa mem $REF $MacroGenPATH/${i}_R1_trimmed.fastq.gz $MacroGenPATH/${i}_R2_trimmed.fastq.gz \
     -t $THREADS | samtools view -hbS -@ $THREADS - -o $OUT/${i}.cat_ref.bam
     echo " - Sorting ${i} -"
     samtools sort -@ $THREADS $OUT/${i}.cat_ref.bam -o $OUT/${i}.cat_ref.sorted.bam \
     && rm $OUT/${i}.cat_ref.bam
 
-    echo " *********** \n\n - Adding READ Groups to ${i} and changing name to ${BARCODEID["${i}"]} - \n\n ***********"
+    echo -e " *********** \n\n - Adding READ Groups to ${i} and changing name to ${BARCODEID["${i}"]} - \n\n ***********"
     run=($(echo $i | cut -d"_" -f 1))  #Extracting run from i
     echo $run
     java -jar /opt/picard-tools/picard.jar AddOrReplaceReadGroups \
@@ -73,7 +73,7 @@ for i in ${MacroGenARRAY[@]}
     RGPL=Illumina RGPU=${run} RGSM=${BARCODEID["${i}"]} \
     VALIDATION_STRINGENCY=SILENT && rm $OUT/${i}.cat_ref.sorted.bam
 
-    echo " *********** \n\n - Marking Duplicates of ${BARCODEID["${i}"]} and Re-Sorting - \n\n ***********"
+    echo -e " *********** \n\n - Marking Duplicates of ${BARCODEID["${i}"]} and Re-Sorting - \n\n ***********"
 
     java -jar /opt/picard-tools/picard.jar MarkDuplicates \
     METRICS_FILE=$OUT/${i}_rmdup.txt \
@@ -86,7 +86,7 @@ for i in ${MacroGenARRAY[@]}
     rm $OUT/${BARCODEID["${i}"]}_cat_ref_sorted_rg_rmdup.bam
     samtools index $OUT/${BARCODEID["${i}"]}_cat_ref_sorted_rg_rmdup_sorted.bam
 
-    echo " *********** \n\n - Realigning ${BARCODEID["${i}"]} - \n\n ***********"
+    echo -e " *********** \n\n - Realigning ${BARCODEID["${i}"]} - \n\n ***********"
 
     # RealignerTargetCreator
     java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T RealignerTargetCreator \

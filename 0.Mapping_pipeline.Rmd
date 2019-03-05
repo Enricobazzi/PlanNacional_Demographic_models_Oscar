@@ -20,7 +20,7 @@ bwa index /home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_cat
 
 Since the samples were already quality checked and trimmed for previous projects, these steps were skipped and I proceeded to map directly.
 
-# 0. Path Definition
+# Path Definition
 
 Define the paths to different locations
 
@@ -162,5 +162,10 @@ screen -S maploop.log
 script maploop.log
 
 ./MACROGEN-mapping-noLL112.sh
+
+screen -S pgenmaploop.log
+script pgenmaploop.log
+
+./PGENOMA-mapping.sh
 
 ```
