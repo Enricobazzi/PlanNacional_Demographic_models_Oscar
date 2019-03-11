@@ -168,4 +168,10 @@ script pgenmaploop.log
 
 ./PGENOMA-mapping.sh
 
+screen -S americamaploop.log
+script americamaploop.log
+
+./AMERICALYNX-mapping.sh
+
+
 ```
