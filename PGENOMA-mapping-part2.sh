@@ -12,6 +12,10 @@
 # from the cesga server in a folder called Enrico_move2 with the following path:
 # /home/ebazzicalupo/fastqs/Enrico_move2
 
+# tar -zcvf Enrico_move2.tar.gz Enrico_move2
+# scp Enrico_move2.tar.gz ebazzicalupo@genomics-b.ebd.csic.es:~
+# tar -zxvf Enrico_move2.tar.gz
+
 # As explained in the 0.Mapping_pipeline.Rmd document, this mapping to the cat
 # reference genome is necessary in order to generate demographic models through
 # machine learning, a step which will be conducted by a collaborator (name ...),
