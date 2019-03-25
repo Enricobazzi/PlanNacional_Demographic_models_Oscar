@@ -1,0 +1,16 @@
+---
+title: "skeleSim"
+author: "Enrico"
+date: "22/3/2019"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+
+install_github("christianparobek/skeleSim", build_vignettes = TRUE, force = TRUE)
+library(skeleSim)
+skeleSimGUI()
+
+```
+
