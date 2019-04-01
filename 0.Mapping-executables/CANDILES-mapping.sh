@@ -88,13 +88,13 @@ for i in ${SampleARRAY[@]}
 
     ls $OUT/${i}_*_sorted_rg.bam  > $OUT/${i}.bam.list
     samtools merge  -@ $THREADS -r $OUT/${i}_merged.bam -b $OUT/"${i}".bam.list
-
-    BAMARRAY=($(cat $OUT/${i}.bam.list))
-    for k in ${BAMARRAY[@]}
-      do
-        echo "Removing $k"
-        rm $k
-    done
+# removing the automatic deletion of intermediary bams to keep them in case something goes wrong
+    # BAMARRAY=($(cat $OUT/${i}.bam.list))
+    # for k in ${BAMARRAY[@]}
+    #   do
+    #     echo "Removing $k"
+    #     rm $k
+    # done
 
     echo " Re-Sorting ${i}"
     samtools sort  -@ $THREADS $OUT/${i}_merged.bam -o $OUT/${i}_cat_ref_sorted_rg.bam && rm $OUT/${i}_merged.bam;
@@ -119,9 +119,10 @@ for i in ${SampleARRAY[@]}
     java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T RealignerTargetCreator \
     -nt $THREADS -R $REF -fixMisencodedQuals -I $OUT/${i}_cat_ref_sorted_rg_rmdup_sorted.bam \
     -o $OUT/${i}_realignertargetcreator.intervals
-    # IndelRealigner
+    # IndelRealigner - ADDED -fixMisencodedQuals because these reads are from Illumina 1.5 and GATK was giving me an error.
+    # Will try with whis and see if it works
     java -jar /home/tmp/Software/GATK_3.4/GenomeAnalysisTK.jar -T IndelRealigner \
-    -R $REF -targetIntervals $OUT/${i}_realignertargetcreator.intervals \
+    -R $REF -fixMisencodedQuals -targetIntervals $OUT/${i}_realignertargetcreator.intervals \
     -I $OUT/${i}_cat_ref_sorted_rg_rmdup_sorted.bam \
     -o $OUT/${i}_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam
     rm $OUT/${i}_cat_ref_sorted_rg_rmdup_sorted.bam
