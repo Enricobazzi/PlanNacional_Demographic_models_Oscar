@@ -61,15 +61,15 @@ for sample in "${SAMPLELIST[@]}"
     STDEV_SAMTOOLS_DEPTH="$(samtools depth ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk '{sum+=$3; sumsq+=$3*$3} END { print sqrt(sumsq/2563897203 - (sum/2563897203)**2)}')"
 
     # column 16 : cov_gt_zero
-    COV_GT_ZERO="$(samtools ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=1 '$4>=X' | wc -l)"
+    COV_GT_ZERO="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=1 '$4>=X' | wc -l)"
 
     # column 17 : cov_gt_five
-    COV_GT_FIVE="$(samtools ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=5 '$4>=X' | wc -l)"
+    COV_GT_FIVE="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=5 '$4>=X' | wc -l)"
 
     # column 18 : cov_gt_twenty
-    COV_GT_TWENTY="$(samtools ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=20 '$4>=X' | wc -l)"
+    COV_GT_TWENTY="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=20 '$4>=X' | wc -l)"
 
     # column 19 : cov_gt_fifty
-    COV_GT_FIFTY="$(samtools ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=50 '$4>=X' | wc -l)"
+    COV_GT_FIFTY="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=50 '$4>=X' | wc -l)"
 
 done
