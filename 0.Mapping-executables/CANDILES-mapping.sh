@@ -39,7 +39,7 @@
 ## VARIABLE and PATHS definition ##
 ###################################
 
-# List of all Lynx pardinus sample codes in Project Genoma part2:
+# List of all Lynx pardinus sample codes in Lypa23:
 CandilesARRAY=($(ls /home/ebazzicalupo/fastqs/Enrico_moveLypa/*.fastq.gz | rev | cut -d'/' -f 1 | rev | cut -d '_' -f1,2,3,4 | uniq))
 # Path to cat reference genome:
 REF=/home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
@@ -47,7 +47,7 @@ REF=/home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Fel
 THREADS=10
 # Path to output files, were BAMS are generated:
 OUT=/home/ebazzicalupo/CatRef_bams
-# path to Project Genoma 2 fastq files:
+# path to Candiles fastq files:
 CandilesPATH=/home/ebazzicalupo/fastqs/Enrico_moveLypa
 # BARCODE CANDILES copied from Maria:
 declare -A BARCODEID=(["6220RAAXX_lane3_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane4_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane6_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane7_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane8_sequence_0"]="c_lp_sm_0221" ["62AHEAAXX_lane1_sequence_0"]="c_lp_sm_0221" ["621CYAAXX_lane1_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane1_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane5_sequence_0"]="c_lp_sm_0221" ["6220RAAXX_lane2_sequence_0"]="c_lp_sm_0221")

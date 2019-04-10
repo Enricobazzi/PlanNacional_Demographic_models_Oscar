@@ -37,9 +37,9 @@
 ## VARIABLE and PATHS definition ##
 ###################################
 
-# List of all Lynx canadiens sample codes in PN2017:
+# List of all Lynx canadiens 3 (Murphy) sample codes in PN2017:
 LCA_3ARRAY=($(ls /GRUPOS/grupolince/PN2017/LCA_3/*.fastq.gz | rev | cut -d'/' -f 1 | rev | cut -d '_' -f1,2 | uniq))
-# List of all Lynx rufus sample codes in PN2017:
+# List of all Lynx rufus 30 (Murphy) sample codes in PN2017:
 LRU_30ARRAY=($(ls /GRUPOS/grupolince/PN2017/LRU_30/*.fastq.gz | rev | cut -d'/' -f 1 | rev | cut -d '_' -f1,2 | uniq))
 # Path to cat reference genome:
 REF=/home/GRUPOS/grupolince/reference_genomes/felis_catus_genome/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
