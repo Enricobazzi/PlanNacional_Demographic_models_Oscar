@@ -176,4 +176,4 @@ for sample in "${SAMPLELIST[@]}"
 
 done
 
-# rm /home/ebazzicalupo/mapstats/*borrar*
+rm /home/ebazzicalupo/mapstats/*borrar*
