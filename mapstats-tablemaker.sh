@@ -103,7 +103,7 @@ SAMPLELIST=($(ls ~/CatRef_bams/*_indelrealigner.bam | rev | cut -d'/' -f 1 | rev
 echo "sample_name,total_seq,total_reads,duplicates,mapped,properly_pair,\
 with_mat_to_another_chr,uniq_mapped,uniq_mapped_vs_total_reads,duplicates_vs_total_reads,\
 mapped_vs_total_seq,properly_pair_vs_total_seq,with_mat_to_another_chr_vs_total_seq,\
-samtools_depth,stdev_samtools_depth,cov_gt_zero,cov_gt_five,cov_gt_twenty,cov_gt_fifty" \
+samtools_depth,stdev_samtools_depth,cov_gt_zero,cov_gt_five,cov_gt_twenty,cov_gt_fifty,cov_gt_seventy" \
 > ~/mapstats/mapstats.csv
 
 # Loop adding a row for each sample
@@ -159,20 +159,25 @@ for sample in "${SAMPLELIST[@]}"
 
     # column 16 : cov_gt_zero --> percentage of ref. genome covered by at least 1 read
     COV_GT_ZERO="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=1 '$4>=X' | wc -l)"
+    COV_GT_ZERO_PC="$(echo "scale=5; $COV_GT_ZERO *100 / 2563897203" | bc )"
 
     # column 17 : cov_gt_five --> percentage of ref. genome covered by at least 5 read
     COV_GT_FIVE="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=5 '$4>=X' | wc -l)"
+    COV_GT_FIVE_PC="$(echo "scale=5; $COV_GT_FIVE *100 / 2563897203" | bc )"
 
     # column 18 : cov_gt_twenty --> percentage of ref. genome covered by at least 20 read
     COV_GT_TWENTY="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=20 '$4>=X' | wc -l)"
+    COV_GT_TWENTY_PC="$(echo "scale=5; $COV_GT_TWENTY *100 / 2563897203" | bc )"
 
     # column 19 : cov_gt_fifty --> percentage of ref. genome covered by at least 50 read
     COV_GT_FIFTY="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=50 '$4>=X' | wc -l)"
+    COV_GT_FIFTY_PC="$(echo "scale=5; $COV_GT_FIFTY *100 / 2563897203" | bc )"
 
     # column 20 : cov_gt_fifty --> percentage of ref. genome covered by at least 70 read
     COV_GT_SEVENTY="$(samtools mpileup ~/CatRef_bams/"${sample}"_cat_ref_sorted_rg_rmdup_sorted_indelrealigner.bam | awk -v X=70 '$4>=X' | wc -l)"
+    COV_GT_SEVENTY_PC="$(echo "scale=5; $COV_GT_SEVENTY *100 / 2563897203" | bc )"
 
-    echo "$NAME,$TOTAL_SEQ,$TOTAL_READS,$DUPLICATES,$MAPPED,$PROPERLY_PAIR,$WITH_MATE_TO_ANOTHER_CHR,$UNIQ_MAPPED,$UNIQ_MAPPED_vs_TOTAL_READS,$DUPLICATES_vs_TOTAL_READS,$MAPPED_vs_TOTAL_SEQ,$PROPERLY_PAIR_vs_TOTAL_SEQ,$WITH_MATE_TO_ANOTHER_CHR_vs_TOTAL_SEQ,$SAMTOOLS_DEPTH,$STDEV_SAMTOOLS_DEPTH,$COV_GT_ZERO,$COV_GT_FIVE,$COV_GT_TWENTY,$COV_GT_FIFTY,$COV_GT_SEVENTY" >> ~/mapstats/mapstats.csv
+    echo "$NAME,$TOTAL_SEQ,$TOTAL_READS,$DUPLICATES,$MAPPED,$PROPERLY_PAIR,$WITH_MATE_TO_ANOTHER_CHR,$UNIQ_MAPPED,$UNIQ_MAPPED_vs_TOTAL_READS,$DUPLICATES_vs_TOTAL_READS,$MAPPED_vs_TOTAL_SEQ,$PROPERLY_PAIR_vs_TOTAL_SEQ,$WITH_MATE_TO_ANOTHER_CHR_vs_TOTAL_SEQ,$SAMTOOLS_DEPTH,$STDEV_SAMTOOLS_DEPTH,$COV_GT_ZERO_PC,$COV_GT_FIVE_PC,$COV_GT_TWENTY_PC,$COV_GT_FIFTY_PC,$COV_GT_SEVENTY_PC" >> ~/mapstats/mapstats.csv
 
 done
 
