@@ -1,0 +1,94 @@
+---
+title: "1.CESGA_jobsubmission_IDs"
+author: "Enrico"
+date: "28 May 2019"
+output: html_document
+---
+
+
+This file will be used to track the job submission number of each individual associated with each chromosome
+
+## CHROMOSOME A1:
+
+```
+launching c_lc_zz_0001
+Submitted batch job 2645512
+launching c_lc_zz_0003
+Submitted batch job 2645513
+launching c_ll_cr_0212
+Submitted batch job 2645514
+launching c_ll_ki_0090
+Submitted batch job 2645515
+launching c_ll_vl_0112
+Submitted batch job 2645516
+launching c_ll_ya_0146
+Submitted batch job 2645517
+launching c_lp_do_0153
+Submitted batch job 2645518
+launching c_lp_do_0173
+Submitted batch job 2645519
+launching c_lp_do_0443
+Submitted batch job 2645520
+launching c_lp_sm_0138
+Submitted batch job 2645521
+launching c_lp_sm_0140
+Submitted batch job 2645522
+launching c_lp_sm_0185
+Submitted batch job 2645523
+launching c_lp_sm_0186
+Submitted batch job 2645524
+launching c_lp_sm_0221
+Submitted batch job 2645525
+launching c_lp_sm_0298
+Submitted batch job 2645526
+launching c_lr_fl_0005
+Submitted batch job 2645527
+launching c_lr_nm_0006
+Submitted batch job 2645528
+launching c_lr_zz_0001
+Submitted batch job 2645529
+launching h_lp_do_0007
+Submitted batch job 2645530
+```
+## CHROMOSOME A2:
+
+```
+launching c_lc_zz_0001
+Submitted batch job 2645594
+launching c_lc_zz_0003
+Submitted batch job 2645595
+launching c_ll_cr_0212
+Submitted batch job 2645596
+launching c_ll_ki_0090
+Submitted batch job 2645597
+launching c_ll_vl_0112
+Submitted batch job 2645598
+launching c_ll_ya_0146
+Submitted batch job 2645599
+launching c_lp_do_0153
+Submitted batch job 2645600
+launching c_lp_do_0173
+Submitted batch job 2645601
+launching c_lp_do_0443
+Submitted batch job 2645602
+launching c_lp_sm_0138
+Submitted batch job 2645603
+launching c_lp_sm_0140
+Submitted batch job 2645604
+launching c_lp_sm_0185
+Submitted batch job 2645605
+launching c_lp_sm_0186
+Submitted batch job 2645606
+launching c_lp_sm_0221
+Submitted batch job 2645607
+launching c_lp_sm_0298
+Submitted batch job 2645608
+launching c_lr_fl_0005
+Submitted batch job 2645609
+launching c_lr_nm_0006
+Submitted batch job 2645610
+launching c_lr_zz_0001
+Submitted batch job 2645611
+launching h_lp_do_0007
+Submitted batch job 2645612
+```
