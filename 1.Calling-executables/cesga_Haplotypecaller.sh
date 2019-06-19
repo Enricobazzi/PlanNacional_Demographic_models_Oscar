@@ -12,12 +12,12 @@
 ## GATK 4.1.1.0 HaplotypeCaller launcher ##
 ###########################################
 
-# This program runs GATK 4.1.1.0 HaplotypeCaller with standard settings for per-sample
+# This program runs GATK 4.1.1.0 HaplotypeCaller with standard settings for per-sample per-chromosome
 # GVCF generation on the finis terrae II server of CESGA.
 
-# The sample name must be defined while launching the script as such:
+# The sample name and chromosome must be defined while launching the script as such:
 
-# ./cesga_Haplotypecaller.sh <sample>
+# ./cesga_Haplotypecaller.sh <sample> <chromosome>
 
 module load gatk/4.1.1.0
 
@@ -39,7 +39,7 @@ BED=/mnt/lustre/scratch/home/csic/ebd/jg2/test/CatGenome_CHR_BEDs/"$2"_CHR_coord
 
 
 ##################################
-## GATK 4.1.0.0 HaplotypeCaller ##
+## GATK 4.1.1.0 HaplotypeCaller ##
 ##################################
 
 gatk --java-options "-Xmx4g" HaplotypeCaller  \
