@@ -1,0 +1,54 @@
+#!/bin/bash
+#SBATCH -t 1-00:00
+#SBATCH -p thinnodes
+#SBATCH -c 24
+#SBATCH --mail-type=TIME_LIMIT_80
+#SBATCH --mail-user=enricobazzical@gmail.com
+
+####################################################
+START=$(date)
+echo "GenotypeGVCFs SCRIPT for $1 starting : $START"
+####################################################
+
+#########################################
+## GATK 4.1.1.0 GenotypeGVCFs launcher ##
+#########################################
+
+# This program runs GATK 4.1.1.0 GenotypeGVCFs with standard settings for per-chromosome
+# GVCF generated on the finis terrae II server of CESGA.
+
+# The sample name must be defined while launching the script as such:
+
+# ./cesga_GenotypeGVCFs.sh <chromosome>
+
+module load gatk/4.1.1.0
+
+###################################
+## VARIABLE and PATHS definition ##
+###################################
+
+# Reference Genome:
+REF=/mnt/lustre/scratch/home/csic/ebd/jg2/test/Felis_catus_Ref/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
+
+# Input File:
+INgvcf=/mnt/lustre/scratch/home/csic/ebd/jg2/test/CatRef_gvcfs/"$1"_cat_ref_joint.g.vcf.gz
+
+# Output Files:
+OUTvcf=/mnt/lustre/scratch/home/csic/ebd/jg2/test/CatRef_gvcfs/"$1"_cat_ref.vcf.gz
+
+# chromosome BED file:
+BED=/mnt/lustre/scratch/home/csic/ebd/jg2/test/CatGenome_CHR_BEDs/"$1"_CHR_coordinates.bed
+
+################################
+## GATK 4.1.1.0 GenotypeGVCFs ##
+################################
+
+gatk --java-options "-Xmx4g" GenotypeGVCFs \
+  -R $REF \
+  -V $INgvcf \
+  -O $OUTvcf
+
+####################################################
+END=$(date)
+echo "GenotypeGVCFs SCRIPT for $1 ended : $END"
+####################################################
