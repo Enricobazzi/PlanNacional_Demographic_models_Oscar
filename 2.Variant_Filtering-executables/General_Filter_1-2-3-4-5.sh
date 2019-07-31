@@ -2,6 +2,8 @@
 #SBATCH -t 2-00:00
 #SBATCH -p thinnodes
 #SBATCH -c 24
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-type=END
 #SBATCH --mail-type=TIME_LIMIT_80
 #SBATCH --mail-user=enricobazzical@gmail.com
 
@@ -56,7 +58,7 @@ INvcf=$LUSTRE/test/CatRef_vcfs/"$1".vcf.gz
 
 # Output LOG File:
 OUTlog="$1".filtering.log
-echo "Variant Filtering LOG" > $OUTlog
+echo "General Variant Filtering LOG" > $OUTlog
 
 # BED File of Masked regions:
 MASKbed=$LUSTRE/test/CatGenome_Masked_BEDs/Masked_Regions.bed
