@@ -9,7 +9,7 @@
 
 #############################################################
 START=$(date)
-echo "General_Filter_1-2-3-4 SCRIPT for $1 starting : $START"
+echo "Missingness_Filter_6 SCRIPT for $1 starting : $START"
 #############################################################
 
 ####################################
@@ -31,91 +31,109 @@ echo "General_Filter_1-2-3-4 SCRIPT for $1 starting : $START"
 module load bedtools
 module load bcftools
 
-###################################
-## VARIABLE and PATHS definition ##
-###################################
+# # The VCF file name (without the extensions) must be defined while launching
+# the script as such:
 
+# ./Missingness_Filter_6.sh <VCFfilename>
 
-######################
-## Applying filters ##
-######################
+#####################################
+## Applying filters - Preparations ##
+#####################################
 
 # List all sample names in a .namelist file:
 ls $LUSTRE/test/CatRef_bams/*.bam | rev | cut -d'/' -f1 | rev | cut -d '_' -f1-4 | sort -u \
 > $LUSTRE/test/CatRef_bams/all-samples.namelist
 
-# List of species:
+# List species in an array (for loop):
 speciesARRAY=($(ls $LUSTRE/test/CatRef_bams/*.bam | rev | cut -d'/' -f1 | rev | cut -d '_' -f2 | sort -u))
 
 # Create a copy of the VCF file with a new name that will be used to filter out
 # excessively missing variants:
-cp $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter5.vcf $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf
+cp $LUSTRE/test/CatRef_vcfs/"$1".filter5.vcf $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
-# for each species: create a .namelist file, divide the VCF by species, extract the
-# excessive missingness variant, filter them from the new (copied) VCF file of all
-# individuals
+#######################################
+## Applying filters - The great LOOP ##
+#######################################
 
+# For each species:
+# (1) create a .namelist file (with the names of all samples of that species);
+# (2) use the namelist file to divide the VCF by species;
+# (3) extract the excessive missingness variant with BCFtools filter, F_MISSING indicates
+#       the proportion of missing data, the thresholds are explained above (lines 19-24);
+# (4) filter the excessively missing variants from the new (lines 50-52) VCF file of all samples
+#       with BEDtools subtract.
+
+# Have a log file with filtered variants counts:
 echo "Per-Species missingness variant filtering:" > $LUSTRE/test/missingness.variants.log
 
 for species in ${speciesARRAY[@]}
   do
 
+# (1) create a .namelist file (with the names of all samples of that species)
   echo "extracting $species names"
   grep $species $LUSTRE/test/CatRef_bams/all-samples.namelist > $LUSTRE/test/CatRef_bams/$species.namelist
 
+# (2) use the namelist file to divide the VCF by species
   echo "filtering $species individuals from original VCF"
-  bcftools view -S $LUSTRE/test/CatRef_bams/$species.namelist -Ov \
-  $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter5.vcf \
-  > $LUSTRE/test/CatRef_vcfs/$species_cat_ref.filter5.subset.vcf
+  bcftools view -S $LUSTRE/test/CatRef_bams/"$species".namelist -Ov \
+  $LUSTRE/test/CatRef_vcfs/"$1".filter5.vcf \
+  > $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf
 
+# (3) extract the excessive missingness variant with BCFtools filter and
+# (4) filter the excessively missing variants from the new VCF file of all samples
   echo "extracting missing variants from $species VCF and filtering them out"
   if [ $species == lc ]
     then
-    bcftools filter -i "N_MISSING >= 2" -Ov $species_cat_ref.filter5.subset.vcf \
-    > $species_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 1" -Ov "$species"_cat_ref.filter5.subset.vcf \
+    > "$species"_cat_ref.filter5.subset.missing.vcf
 
-    LCmiss=$(grep -v "#" $species_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LCmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LC : $LCmiss" >> $LUSTRE/test/missingness.variants.log
 
-    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf \
-    -b $species_cat_ref.filter5.subset.missing.vcf -header \
-    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf
+    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
+    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   elif [ $species == ll ]
     then
-    bcftools filter -i "N_MISSING >= 4" -Ov $species_cat_ref.filter5.subset.vcf \
-    > $species_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 1" -Ov "$species"_cat_ref.filter5.subset.vcf \
+    > "$species"_cat_ref.filter5.subset.missing.vcf
 
-    LLmiss=$(grep -v "#" $species_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LLmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LL : $LLmiss" >> $LUSTRE/test/missingness.variants.log
 
-    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf \
-    -b $species_cat_ref.filter5.subset.missing.vcf -header \
-    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf
+    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
+    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   elif [ $species == lp ]
     then
-    bcftools filter -i "N_MISSING >= 8" -Ov $species_cat_ref.filter5.subset.vcf \
-    > $species_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 0.7" -Ov "$species"_cat_ref.filter5.subset.vcf \
+    > "$species"_cat_ref.filter5.subset.missing.vcf
 
-    LPmiss=$(grep -v "#" $species_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LPmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LP : $LPmiss" >> $LUSTRE/test/missingness.variants.log
 
-    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf \
-    -b $species_cat_ref.filter5.subset.missing.vcf -header \
-    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf
+    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
+    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   elif [ $species == lr ]
     then
-    bcftools filter -i "N_MISSING >= 3" -Ov $species_cat_ref.filter5.subset.vcf \
-    > $species_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 1" -Ov "$species"_cat_ref.filter5.subset.vcf \
+    > "$species"_cat_ref.filter5.subset.missing.vcf
 
-    LRmiss=$(grep -v "#" $species_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LRmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LR : $LRmiss" >> $LUSTRE/test/missingness.variants.log
 
-    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf \
-    -b $species_cat_ref.filter5.subset.missing.vcf -header \
-    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/WholeGenome_cat_ref.filter6.vcf
+    bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
+    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   fi
 done
+
+###########################################################
+END=$(date)
+echo "Missingness_Filter_6 SCRIPT for $1 ended : $END"
+###########################################################

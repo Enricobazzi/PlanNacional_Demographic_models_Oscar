@@ -57,26 +57,26 @@ REF=/mnt/lustre/scratch/home/csic/ebd/jg2/test/Felis_catus_Ref/Felis_catus.Felis
 INvcf=$LUSTRE/test/CatRef_vcfs/"$1".vcf.gz
 
 # Output LOG File:
-OUTlog="$1".filtering.log
+OUTlog=$LUSTRE/test/"$1".filtering.log
 echo "General Variant Filtering LOG" > $OUTlog
 
 # BED File of Masked regions:
 MASKbed=$LUSTRE/test/CatGenome_Masked_BEDs/Masked_Regions.bed
 
 # Step 1 output VCF
-ST1out="$1".filter1.vcf
+ST1out=$LUSTRE/test/CatRef_vcfs/"$1".filter1.vcf
 
 # Step 2 output VCF
-ST2out="$1".filter2.vcf
+ST2out=$LUSTRE/test/CatRef_vcfs/"$1".filter2.vcf
 
 # Step 3 output VCF
-ST3out="$1".filter3.vcf
+ST3out=$LUSTRE/test/CatRef_vcfs/"$1".filter3.vcf
 
 # Step 4 output VCF
-ST4out="$1".filter4.vcf
+ST4out=$LUSTRE/test/CatRef_vcfs/"$1".filter4.vcf
 
 # Step 5 output VCF
-ST5out="$1".filter5.vcf
+ST5out=$LUSTRE/test/CatRef_vcfs/"$1".filter5.vcf
 
 
 ############################################
@@ -117,7 +117,7 @@ echo "Indels + Non-biallelic sites - final number of variants : $ST2end" >> $OUT
 
 # Print number of variants filtered to log:
 ST2filtered="$(echo "$ST1end - $ST2end" | bc)"
-echo "Repetitive/Low mappability regions - number of variants filtered : $ST2filtered" >> $OUTlog
+echo "Indels + Non-biallelic sites - number of variants filtered : $ST2filtered" >> $OUTlog
 
 
 ##################################################################
@@ -170,5 +170,5 @@ echo "RanksSums excluded by Hard quality - number of variants filtered : $ST5fil
 
 ###########################################################
 END=$(date)
-echo "General_Filter_1-2-3-4 SCRIPT for $1 ended : $START"
+echo "General_Filter_1-2-3-4 SCRIPT for $1 ended : $END"
 ###########################################################
