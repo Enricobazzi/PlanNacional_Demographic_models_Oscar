@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -t 2-00:00
+#SBATCH -t 12:00
 #SBATCH -p thinnodes
 #SBATCH -c 24
 #SBATCH --mail-type=BEGIN
@@ -84,50 +84,50 @@ for species in ${speciesARRAY[@]}
   echo "extracting missing variants from $species VCF and filtering them out"
   if [ $species == lc ]
     then
-    bcftools filter -i "F_MISSING = 1" -Ov "$species"_cat_ref.filter5.subset.vcf \
-    > "$species"_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 1" -Ov $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf \
+    > $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf
 
-    LCmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LCmiss=$(grep -v "#" $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LC : $LCmiss" >> $LUSTRE/test/missingness.variants.log
 
     bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
-    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    -b $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf -header \
     > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   elif [ $species == ll ]
     then
-    bcftools filter -i "F_MISSING = 1" -Ov "$species"_cat_ref.filter5.subset.vcf \
-    > "$species"_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 1" -Ov $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf \
+    > $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf
 
-    LLmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LLmiss=$(grep -v "#" $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LL : $LLmiss" >> $LUSTRE/test/missingness.variants.log
 
     bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
-    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    -b $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf -header \
     > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   elif [ $species == lp ]
     then
-    bcftools filter -i "F_MISSING = 0.7" -Ov "$species"_cat_ref.filter5.subset.vcf \
-    > "$species"_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 0.7" -Ov $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf \
+    > $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf
 
-    LPmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LPmiss=$(grep -v "#" $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LP : $LPmiss" >> $LUSTRE/test/missingness.variants.log
 
     bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
-    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    -b $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf -header \
     > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   elif [ $species == lr ]
     then
-    bcftools filter -i "F_MISSING = 1" -Ov "$species"_cat_ref.filter5.subset.vcf \
-    > "$species"_cat_ref.filter5.subset.missing.vcf
+    bcftools filter -i "F_MISSING = 1" -Ov $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf \
+    > $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf
 
-    LRmiss=$(grep -v "#" "$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
+    LRmiss=$(grep -v "#" $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
     echo "Variants filtered for LR : $LRmiss" >> $LUSTRE/test/missingness.variants.log
 
     bedtools subtract -a $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf \
-    -b "$species"_cat_ref.filter5.subset.missing.vcf -header \
+    -b $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf -header \
     > tmp && mv tmp $LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
   fi
