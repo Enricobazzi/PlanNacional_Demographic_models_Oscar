@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -t 12:00
+#SBATCH -t 12:00:00
 #SBATCH -p thinnodes
 #SBATCH -c 24
 #SBATCH --mail-type=BEGIN
@@ -108,7 +108,7 @@ for species in ${speciesARRAY[@]}
 
   elif [ $species == lp ]
     then
-    bcftools filter -i "F_MISSING = 0.7" -Ov $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf \
+    bcftools filter -i "F_MISSING > 0.7" -Ov $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.vcf \
     > $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf
 
     LPmiss=$(grep -v "#" $LUSTRE/test/CatRef_vcfs/"$species"_cat_ref.filter5.subset.missing.vcf | wc -l)
