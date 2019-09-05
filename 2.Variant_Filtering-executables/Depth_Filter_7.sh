@@ -66,7 +66,7 @@ module load gatk/4.1.1.0
 REF=/mnt/lustre/scratch/home/csic/ebd/jg2/test/Felis_catus_Ref/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
 
 # AllIndividuals input VCF
-INVCF=$LUSTRE/test/CatRef_vcfs/"$1"_cat_ref.filter6.vcf
+INVCF=$LUSTRE/test/CatRef_vcfs/"$1".filter6.vcf
 
 # VCF Directory
 OUTdir=$LUSTRE/test/CatRef_vcfs
@@ -135,7 +135,7 @@ done
 
 # Report final number of variants
 finalVARs=($(grep -v "#" $OUTVCF | wc -l))
-echo "starting variants : $finalVARs" >> $depthLOG
+echo "final variants : $finalVARs" >> $depthLOG
 
 
 ###########################################################
