@@ -39,7 +39,7 @@ echo "Depth_Filter_7 SCRIPT for $1 starting : $START"
 # After dividing my global VCF into single dataset VCFs (with only individuals of the same dataset),
 # I will apply a filter to each dataset based on the maximum and minimum values
 # of depth calculated with the R script depth_loop.R. These values are saved into a table called
-# depth_per_sample.csv stored in XXX directory.
+# depth_per_sample.csv stored in FilterTrials directory.
 # I will finally filter out from the global VCF the variants filtered out in the single
 # dataset VCFs.
 
@@ -47,39 +47,95 @@ echo "Depth_Filter_7 SCRIPT for $1 starting : $START"
 
 # BEDtools 2.28.0
 # BCFtools 1.9
+# GATK 4.1.0.0
 
 module load bedtools
 module load bcftools
+module load gatk/4.1.1.0
 
 # # The VCF file name (without the extensions) must be defined while launching
 # the script as such:
 
 # ./Depth_Filter_7.sh <VCFfilename>
 
-#####################################
-## Applying filters - Preparations ##
-#####################################
+###################################
+## VARIABLE and PATHS definition ##
+###################################
 
-# List all sample names in a .namelist file:
-ls $LUSTRE/test/CatRef_bams/*.bam | rev | cut -d'/' -f1 | rev | cut -d '_' -f1-4 | sort -u \
-> $LUSTRE/test/CatRef_bams/all-samples.namelist
+# Reference Genome:
+REF=/mnt/lustre/scratch/home/csic/ebd/jg2/test/Felis_catus_Ref/Felis_catus.Felis_catus_9.0.dna.toplevel.fa
 
-# Declare dataset elements
-declare -A BARCODEID=(["c_lc_zz_0001"]="LCmacro" ["c_lc_zz_0003"]="LCMurphy" ["c_ll_cr_0212"]="LLmacro" \
-["c_ll_ki_0090"]="LLmacro" ["c_ll_vl_0112"]="LLmacro" ["c_ll_ya_0146"]="LLmacro" ["c_lp_do_0153"]="LPpgenoma" \
-["c_lp_do_0173"]="LPpgenoma" ["c_lp_do_0443"]="LPpgenoma" ["c_lp_sm_0138"]="LPpgenoma" ["c_lp_sm_0140"]="LPpgenoma" \
-["c_lp_sm_0185"]="LPpgenoma" ["c_lp_sm_0186"]="LPpgenoma" ["c_lp_sm_0298"]="LPpgenoma" ["c_lp_sm_0359"]="LPpgenoma" \
-["h_lp_do_0007"]="LPpgenoma" ["c_lr_fl_0005"]="LRMurphy" ["c_lr_nm_0006"]="LRJan" ["c_lr_zz_0001"]="LRmacro" \
-["c_lp_sm_0221"]="LPcandiles")
+# AllIndividuals input VCF
+INVCF=$LUSTRE/test/CatRef_vcfs/"$1"_cat_ref.filter6.vcf
 
-# List individuals in an array (for loop):
-individualsARRAY=($(cat $LUSTRE/test/CatRef_bams/all-samples.namelist))
+# VCF Directory
+OUTdir=$LUSTRE/test/CatRef_vcfs
 
-for i in ${individualsARRAY[@]}
+# Depth per sample Table generated in R (depth_loop.R)
+DPStable=$LUSTRE/test/FilterTrials/depth_per_sample.csv
+
+# Create a copy of the VCF file with a new name that will be used to filter out
+# variants with excessively low/high depth:
+cp $INVCF $OUTdir/"$1".filter7.vcf
+OUTVCF=$OUTdir/"$1".filter7.vcf
+
+# Create a log file for keeping track of variant numbers in the various steps
+echo "Per dataset Depth variant filtering:" > $LUSTRE/test/depth.filtering.variants.log
+depthLOG=$LUSTRE/test/depth.filtering.variants.log
+
+#############################
+## Applying filters - LOOP ##
+#############################
+
+# Report starting number of variants
+startVARs=($(grep -v "#" $INVCF | wc -l))
+echo "starting variants : $startVARs" >> $depthLOG
+
+# List of all datasets in an array:
+datasetARRAY=($(ls $LUSTRE/test/CatRef_bams/*.bamlist | rev | cut -d'/' -f1 | rev | cut -d'.' -f1))
+
+# For each dataset:
+for i in ${datasetARRAY[@]}
   do
-    echo ${BARCODEID["${i}"]}
+
+    # (1) Extract VCF of individuals of dataset
+    samplesARRAY=($(cat $LUSTRE/test/CatRef_bams/${i}.bamlist | rev | cut -d'/' -f1 | rev | cut -d'_' -f1-4))
+
+    gatk SelectVariants \
+    -R $REF \
+    -V $INVCF \
+    $(for j in ${samplesARRAY[@]}; do echo "-sn ${j}";done) \
+    -O $OUTdir/${i}.vcf
+
+    # Minimum and Maximum depth values (in this case a min of 5x per sample = column 11, and a max of mean+1.5*sd = column 8)
+    # see depth_loop.R for more detail on each column value
+    max=$(grep ${i} $DPStable | cut -d',' -f8)
+    min=$(grep ${i} $DPStable | cut -d',' -f11)
+    echo "Maximum depth of ${i} is ${max}, Minimum depth is ${min}"
+
+    # (2) extract the excessive missingness variant with BCFtools filter
+    echo "extracting excessively low/high depth variants from $i VCF"
+    bcftools filter -i "INFO/DP < ${min} || INFO/DP > ${max}" -Ov $OUTdir/${i}.vcf \
+    > $OUTdir/${i}.applydepthfilter.vcf
+
+    # (3) filter the excessively missing variants from the new VCF file of all samples
+    echo "subtracting excessively low/high depth variants of $i from output VCF"
+    bedtools subtract -a $INVCF \
+    -b $OUTdir/${i}.applydepthfilter.vcf -header \
+    > tmp && mv tmp $OUTVCF
+
+    # Report number of variants in dataset
+    datasetVARs=($(grep -v "#" $OUTdir/${i}.vcf | wc -l))
+    echo "${i} variants : $datasetVARs" >> $depthLOG
+    # Report number of variants filtered out
+    filteredVARs=($(grep -v "#" $OUTdir/${i}.vcf | wc -l))
+    echo "number of variants filtered from ${i} : $filteredVARs" >> $depthLOG
+
 done
 
+# Report final number of variants
+finalVARs=($(grep -v "#" $OUTVCF | wc -l))
+echo "starting variants : $finalVARs" >> $depthLOG
 
 
 ###########################################################
