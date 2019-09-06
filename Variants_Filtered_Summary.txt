@@ -1,0 +1,31 @@
+Number of variants before filtering : 75635736
+
+Repetitive/Low mappability regions - number of variants filtered : 37329375
+
+Indels + Non-biallelic regions - number of variants filtered : 6165421
+
+Lynx genus wide exclusive substitutions - number of variants filtered : 15543004
+
+Hard quality except for the RanksSums - number of variants filtered : 384870
+
+RanksSums excluded by Hard quality - number of variants filtered : 244
+
+Per-Species missingness variant filtering - number of variants filtered : 592282
+	LC : 48947
+	LL : 30793
+	LR : 15205
+	LP : 542907
+
+Depth variant filtering - number of variants filtered : 1735730
+	LCmacro : 146440
+	LCMurphy : 206210
+	LLmacro : 168973
+	LPcandiles : 620815
+	LPpgenoma : 1157386
+	LRJan : 430322
+	LRmacro : 124364
+	LRMurphy : 236283
+
+Final number of variants after filtering : 13884810
+
+Total number of variants filtered : 61750926

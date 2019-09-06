@@ -120,15 +120,12 @@ for i in ${datasetARRAY[@]}
 
     # (3) filter the excessively missing variants from the new VCF file of all samples
     echo "subtracting excessively low/high depth variants of $i from output VCF"
-    bedtools subtract -a $INVCF \
+    bedtools subtract -a $OUTVCF \
     -b $OUTdir/${i}.applydepthfilter.vcf -header \
     > tmp && mv tmp $OUTVCF
 
-    # Report number of variants in dataset
-    datasetVARs=($(grep -v "#" $OUTdir/${i}.vcf | wc -l))
-    echo "${i} variants : $datasetVARs" >> $depthLOG
     # Report number of variants filtered out
-    filteredVARs=($(grep -v "#" $OUTdir/${i}.vcf | wc -l))
+    filteredVARs=($(grep -v "#" $OUTdir/${i}.applydepthfilter.vcf | wc -l))
     echo "number of variants filtered from ${i} : $filteredVARs" >> $depthLOG
 
 done
