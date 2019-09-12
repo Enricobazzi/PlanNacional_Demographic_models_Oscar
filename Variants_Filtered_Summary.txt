@@ -5,10 +5,13 @@ Repetitive/Low mappability regions - number of variants filtered : 37329375
 Indels + Non-biallelic regions - number of variants filtered : 6165421
 
 Lynx genus wide exclusive substitutions - number of variants filtered : 15543004
+	AF = 1
 
 Hard quality except for the RanksSums - number of variants filtered : 384870
+	QUAL >= 30 && QD >= 2.0 && FS <= 60.0 && MQ >= 40.0
 
 RanksSums excluded by Hard quality - number of variants filtered : 244
+	INFO/MQRankSum<-12.5 | INFO/ReadPosRankSum<-8.0
 
 Per-Species missingness variant filtering - number of variants filtered : 592282
 	LC : 48947
