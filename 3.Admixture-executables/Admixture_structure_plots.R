@@ -11,7 +11,7 @@ Q_sample_files <- list.files(wd_input, pattern="WholeGenome_plink_Humchr_r2_0.3_
 for (i in 1:length(Q_sample_files)){
   # Import the sample file table
   tbl <- read.table(paste0(wd_input,Q_sample_files[[i]]))
-  
+
   barplot(t(as.matrix(tbl)), col=rainbow(i+2),
           xlab="Individual #", ylab="Ancestry", main = paste0("K = ",i + 2), border=NA)
 }
@@ -33,7 +33,7 @@ for (k in 3:8){
  }
 }
 
-## Plot all K = n for one repetition ##
+## Plot all K values for one repetition ##
 # I do this because I observed no differences in any K value for all the repetitions. rep_dirs[[n]] determines the repetition
 
 wd_input <- "/Users/enricobazzicalupo/admixture_structure"
